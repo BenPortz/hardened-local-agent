@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.localagent.model</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/ollama</string>
+    <string>serve</string>
+  </array>
+
+  <!-- Flash attention plus a quantized KV cache are what let a long context (the harness
+       needs one for its tool schemas) fit alongside ~9GB of quantized weights on a 16GB
+       unified-memory machine: an f16 KV cache at 64K is several times the size of a q4_0
+       one. OLLAMA_HOST is pinned to loopback — the model server must never listen on a
+       routable interface.
+
+       Run the model server as a managed service, not as a desktop app: a GUI launcher that
+       also binds the port will fight this unit for it and win at login. -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>OLLAMA_HOST</key>
+    <string>127.0.0.1</string>
+    <key>OLLAMA_FLASH_ATTENTION</key>
+    <string>1</string>
+    <key>OLLAMA_KV_CACHE_TYPE</key>
+    <string>q4_0</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__INSTALL_DIR__/logs/model-launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__INSTALL_DIR__/logs/model-launchd.err.log</string>
+</dict>
+</plist>

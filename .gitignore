@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Never commit runtime secrets, tokens, or logs
+config/mode.env
+config/cloud_agents.env
+config/*.local.yaml
+config/ntfy-server.yml
+*token*.json
+client_secret*.json
+logs/
+*.log
+
+# Runtime records may contain real, sensitive content
+projects/*.json
+!projects/example-project.json
+inbox/*.json
+!inbox/example-inbox-item.json
+asks/
+drafts/
+
+# Local editor / tooling state
+.claude/
+.vscode/
+.idea/
+.playwright-mcp/

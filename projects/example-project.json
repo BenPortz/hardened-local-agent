@@ -1,0 +1,16 @@
+{
+  "id": "example-weekly-report",
+  "title": "Draft the weekly status report from the notes backlog",
+  "state": "researching",
+  "priority": 1,
+  "clarifications": [
+    {
+      "q": "Should the draft target the technical audience or the executive summary tone?",
+      "a": null,
+      "asked": "2026-01-15T08:00:00Z",
+      "answered": null
+    }
+  ],
+  "notes": "Example project record. The agent fills `notes`/`clarifications` as it works; you answer questions to un-park it.",
+  "updated": "2026-01-15T08:00:00Z"
+}

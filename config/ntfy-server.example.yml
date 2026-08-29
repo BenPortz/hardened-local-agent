@@ -1,0 +1,18 @@
+# Self-hosted ntfy push server — copy to the agent host (default ~/.config/ntfy/server.yml).
+#
+# Bind it to the host's PRIVATE MESH address only, never 0.0.0.0: notification content must
+# stay on the owner's own devices. Verify with `lsof -i -P | grep ntfy` after starting it.
+#
+# iOS instant push: each published message triggers a content-free poll request to ntfy.sh
+# (topic name + message id only), which relays through APNS; the phone then fetches the actual
+# message from this server over the mesh. That upstream poll is the one egress rule this
+# service needs — scope the firewall allow to the ntfy binary and ntfy.sh:443 alone.
+#
+# Trade-off to accept knowingly: push only arrives while the phone is connected to the mesh.
+
+base-url: "http://<MESH_IP>:2586"
+listen-http: "<MESH_IP>:2586"
+upstream-base-url: "https://ntfy.sh"
+
+cache-file: "<HOME>/.local/share/ntfy/cache.db"
+cache-duration: "12h"

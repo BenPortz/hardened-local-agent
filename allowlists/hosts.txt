@@ -1,0 +1,13 @@
+# Known-good external hosts. One per line. Connections to hosts NOT listed here are flagged
+# NEW (Tier B alert) by the audit logger, and should be blocked by the host egress firewall.
+# Keep this in sync with the firewall rules.
+127.0.0.1
+localhost
+gmail.googleapis.com
+oauth2.googleapis.com
+www.googleapis.com
+# Any additional first-party API hosts the agent legitimately needs — add explicitly:
+# api.example.com
+# Model-weight host — needed ONLY during the one-time model pull, then remove and re-lock:
+# huggingface.co
+# cdn-lfs.huggingface.co

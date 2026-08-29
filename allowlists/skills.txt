@@ -1,0 +1,6 @@
+# Known/approved skills. One per line. A skill not listed here is flagged NEW and (per the
+# security model) must be human-reviewed before its first run. Add a skill name here only
+# after you've reviewed what it does.
+summarize_thread
+label_email
+draft_reply

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.localagent.mailfetch</string>
+
+  <!-- Pull new mail read-only on a timer so triage always has work queued.
+
+       IMPORTANT: point this at a DEDICATED Python interpreter used for nothing else.
+       Application firewalls key egress rules on the real binary, so giving the fetcher its
+       own interpreter is what makes an allow-rule scoped to the mail API possible without
+       also opening egress for every other script sharing the system Python.
+       See docs/email-ingestion.md. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>__FETCH_RUNTIME__/bin/python3</string>
+    <string>__INSTALL_DIR__/scripts/gmail_fetch.py</string>
+    <string>--query</string>
+    <string>newer_than:1d</string>
+    <string>--max</string>
+    <string>25</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__INSTALL_DIR__</string>
+
+  <!-- Every 15 min. The fetch is idempotent (a message already in inbox/ is skipped),
+       so a missed or doubled run is harmless.
+       NOTE: --max caps the LISTING, not the count of new records, so a large cold-start
+       backlog does not drain on its own — widen --query/--max once to catch up. -->
+  <key>StartInterval</key>
+  <integer>900</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>__INSTALL_DIR__/logs/mailfetch-launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__INSTALL_DIR__/logs/mailfetch-launchd.err.log</string>
+</dict>
+</plist>
