@@ -11,12 +11,12 @@ highest-priority *actionable* project — `in-progress` (a clarification you jus
 
 In `default` mode this folder is ignored entirely; you talk to the agent directly.
 
-Real project records are gitignored: they carry whatever you handed the agent, plus everything
-it wrote back.
+Real project records are gitignored, since they contain whatever you handed the agent along
+with everything it wrote back.
 
 ## Why flat files
 
-The state machine is fully testable without the model, the hub and the scheduler share one
-representation with no schema layer between them, and when something goes wrong the debugging
-tool is `cat`. A queue this size does not need a database, and a database would need a schema
-migration every time a field moves.
+The state machine is testable without the model, the hub and the scheduler share one
+representation with no schema layer in between, and inspecting or repairing state is
+straightforward. A queue this size does not need a database, and using one would mean a schema
+change every time a field moves.

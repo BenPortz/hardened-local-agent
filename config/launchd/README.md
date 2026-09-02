@@ -28,13 +28,13 @@ Check one: `launchctl print gui/$(id -u)/com.localagent.hub | head -20`
 | `hub` | the API + dashboard. Binds the private-mesh interface only. |
 | `scheduler` | the orchestrator loop. Idles unless `config/mode.env` says `orchestrator`. |
 | `ntfy` | self-hosted push server, private-mesh only. |
-| `digest` | the 08:00 daily digest. Its *absence* is the liveness alarm. |
+| `digest` | the 08:00 daily digest. Its absence is what indicates a problem. |
 | `mailfetch` | timed read-only mail pull, under its own dedicated interpreter. |
 
-Two constraints worth designing around rather than hiding:
+Two constraints to plan around:
 
-- **Full-disk encryption means user LaunchAgents do not start until someone physically logs
-  in after a reboot.** That is a deliberate trade — the disk stays encrypted at rest — and
-  the missing daily digest is what tells you the host has not been logged back in.
-- **A sleeping host is a dead host.** Configure it to stay awake on AC with the lid closed
+- Full-disk encryption means user LaunchAgents do not start until someone logs in physically
+  after a reboot. That is the expected trade for keeping the disk encrypted at rest, and a
+  missing daily digest is what tells you the host has not been logged back in.
+- A host that sleeps stops working. Configure it to stay awake on AC with the lid closed
   (`pmset -c sleep 0`, `pmset -c disablesleep 1`) before running anything unattended.

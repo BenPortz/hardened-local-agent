@@ -1,15 +1,13 @@
 # inbox/ — read-only email ingestion queue
 
-Each `*.json` here is one **inert** email record written by `scripts/gmail_fetch.py`, a
-trusted non-agent process that reads the mailbox read-only. The scheduler triages these with
-the agent using a **memory-only toolset** — the agent never has a network or send tool, so it
-cannot act on instructions embedded in a message. See
-[`docs/email-ingestion.md`](../docs/email-ingestion.md) for why that air-gap is the whole
-design rather than an optimization.
+Each `*.json` here is one inert email record written by `scripts/gmail_fetch.py`, a trusted
+non-agent process that reads the mailbox read-only. The scheduler triages these with the agent
+using a memory-only toolset, so the agent has no network or send tool and cannot act on
+instructions embedded in a message. See
+[`docs/email-ingestion.md`](../docs/email-ingestion.md) for the reasoning behind that split.
 
-**This is not a mailbox mirror, and nothing here sends or deletes anything.** Read-only by
-construction: the fetcher makes only API GET calls and refuses to run unless the token's scope
-is exactly `gmail.readonly`.
+This is not a mailbox mirror, and nothing here sends or deletes. The fetcher makes only API GET
+calls and refuses to run unless the token's scope is exactly `gmail.readonly`.
 
 Real records are gitignored. `example-inbox-item.json` shows the shape.
 
@@ -41,7 +39,7 @@ Real records are gitignored. `example-inbox-item.json` shows the shape.
 
 ## On the `injection` field
 
-The model is asked to flag content that reads as instructions aimed at it. That flag is a
-**breadcrumb for the human digest, not a control**. A model that can be talked into complying
-can be talked out of flagging, so nothing gates on this value — it is logged and surfaced, and
-the actual containment is that the triage step holds no tool capable of acting.
+The model is asked to flag content that reads as instructions aimed at it. That flag is a note
+for the human digest, not a control. A model that can be talked into complying can also be
+talked out of flagging, so nothing gates on this value. It is logged and surfaced, and the
+containment is that the triage step holds no tool capable of acting.

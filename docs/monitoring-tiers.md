@@ -1,28 +1,32 @@
-# Monitoring & Audit — The A/B/C/D Tiers
+# Monitoring and audit — the A/B/C/D tiers
 
-Cadence matches risk: dangerous events page you instantly; routine events are reviewable in
-context; patterns surface over time. **Signal-to-noise rule: surface the *new/unknown*, not
-the known.**
+Cadence is matched to risk. High-risk events notify immediately, routine events are reviewable
+in context afterwards, and patterns are aggregated over time. The rule that keeps the output
+readable is to surface what is new or unknown rather than what is expected.
 
 | Tier | What | Cadence | Implementation |
 |------|------|---------|----------------|
-| **A — Silent log** | *Every* agent action, append-only, immutable | Always (no notification) | `scripts/audit_logger.py` — structured JSONL; forensic source of truth |
-| **B — Real-time alert** | High-risk events only | The moment they happen | `scripts/alert.py` — macOS notification/push; optional approval prompt |
-| **C — Per-workflow digest** | Summary of what one routine did | End of each routine/workflow | `scripts/workflow_digest.py` — terse, contextual; **primary** review surface |
-| **D — Nightly roll-up** | Trends & anomalies across the day | Nightly | `scripts/nightly_rollup.py` — aggregates Tier A; pattern-spotting only |
-| **D+ — Daily digest push** | Service health + project states + 24h roll-up, pushed to the phone | 08:00 daily (scheduled service) | `scripts/daily_digest.py` — a *missing* digest is the liveness alarm; any service DOWN escalates priority |
+| **A — Silent log** | Every agent action, append-only | Always, no notification | `scripts/audit_logger.py` — structured JSONL; the source of truth |
+| **B — Real-time alert** | High-risk events only | As they happen | `scripts/alert.py` — push and desktop notification |
+| **C — Per-workflow digest** | Summary of what one routine did | End of each workflow | `scripts/workflow_digest.py` — the main review surface |
+| **D — Nightly roll-up** | Trends and anomalies across the day | Nightly | `scripts/nightly_rollup.py` — aggregates Tier A |
+| **D+ — Daily digest push** | Service health, project states, 24h roll-up, pushed to the phone | 08:00 daily | `scripts/daily_digest.py` — a missing digest indicates a problem; any service down raises the priority |
 
-## Tier B fires ONLY for these high-blast-radius event classes
+## What Tier B fires on
 
-1. An **outbound send** (email / Slack / etc.)
-2. A **delete or settings change**
-3. A **credential access** event
-4. A connection to a **brand-new external host** (not on the allowlist)
-5. A **newly-created skill about to run for the first time**
+Five event classes, and nothing else:
 
-Everything else is logged silently at Tier A and summarized at Tier C — no interruption.
+1. An outbound send (email, chat, and so on)
+2. A delete or a settings change
+3. A credential access
+4. A connection to an external host that is not on the allowlist
+5. A newly created skill about to run for the first time
 
-## Tier A — audit-log schema (one JSON object per line)
+Everything else is logged at Tier A and summarized at Tier C without interrupting anyone.
+
+## Tier A — audit-log schema
+
+One JSON object per line:
 
 ```json
 {
@@ -39,10 +43,12 @@ Everything else is logged silently at Tier A and summarized at Tier C — no int
 }
 ```
 
-The `new_vs_known` flag is computed against the allowlists in `allowlists/`. Anything `NEW`
-is a candidate for a Tier B alert.
+`new_vs_known` is computed against the allowlists in `allowlists/`. Anything marked `NEW` is a
+candidate for a Tier B alert.
 
-## Tier C — per-workflow digest (example)
+## Tier C — per-workflow digest
+
+Example output:
 
 ```
 [morning-email · 07:00–07:02]  6 actions
@@ -55,27 +61,24 @@ is a candidate for a Tier B alert.
   ⚠ Tier B events: 0
 ```
 
-## Tier D — nightly roll-up highlights
+## Tier D — nightly roll-up
 
-- skill-creation rate (and which)
-- any new external hosts seen (count + list)
-- unusual credential-access frequency vs. baseline
-- total outbound actions vs. baseline
+- skill-creation rate, and which skills
+- new external hosts seen, count and list
+- credential-access frequency compared to baseline
+- total outbound actions compared to baseline
 
-## Honest note
+## Design notes
 
-Detection in Tiers A and D is **deterministic** — diffs, allowlist checks, egress-log parsing.
-An LLM may *summarize* a digest for readability but must **never** be the safety gatekeeper
-(it is unreliable at self-judgment and is itself injectable by the very content it reviews).
+**No model in the detection path.** Tiers A and D are diffs, allowlist lookups and log
+parsing. A model may reformat a digest for readability downstream, but it does not decide
+whether anything is safe. It is unreliable at self-judgment, and it is injectable by the
+content it would be reviewing.
 
-## What this design deliberately does not do
+**No alerting on routine events.** Tier B covers the five classes above and nothing more. A
+monitoring surface that notifies too often stops being read, which leaves the appearance of
+oversight without the substance.
 
-- **No LLM anywhere in the detection path.** Tiers A and D are diffs, allowlist lookups and
-  log parsing. A model may render a digest into friendlier prose downstream; it never decides
-  whether something is safe.
-- **No alerting on the routine.** Tier B fires on five event classes and nothing else. A
-  monitoring surface that cries wolf is a monitoring surface nobody reads, which is strictly
-  worse than none — it manufactures the feeling of oversight without the fact of it.
-- **No blocking in the log path.** Alerting is best-effort and every failure is swallowed by
-  the caller: a push server being down must never stop an event from being recorded. The log
-  is the source of truth; the alert is a convenience on top of it.
+**Nothing in the log path blocks.** Alerting is best-effort and its failures are swallowed by
+the caller, so a push server being down cannot stop an event from being recorded. The log is
+the source of truth and the alert sits on top of it.
