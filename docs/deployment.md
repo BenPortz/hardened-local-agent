@@ -5,17 +5,16 @@ Linux with systemd units in place of the launchd templates and an equivalent egr
 
 The order matters. The model download and the harness installer both need open egress, so the
 firewall lock-down comes last. Locking it earlier means loosening it again partway through the
-install, which leaves you worse off than locking it once at the end.
+install.
 
 ## 0. Host preparation
 
-Use a dedicated machine rather than your daily driver. Machine isolation is what bounds the
-blast radius of everything else.
+Use a dedicated machine. Machine isolation is what bounds the blast radius of everything else.
 
 - Wipe it and create a fresh user account.
 - Apply pending OS security updates.
 - Turn on full-disk encryption. Store the recovery key off this machine, in a password manager
-  or on paper, rather than in the vendor's cloud if you want the host self-contained.
+  or on paper, so the host stays self-contained.
 - Sign out of the vendor's cloud sync. A synced folder is an egress path that will not appear
   in any firewall rule.
 
@@ -49,9 +48,9 @@ local model is loaded while it replies. Note where the harness writes its logs a
 config lives, since both are needed later.
 
 Run the model server as a managed service using
-`config/launchd/com.localagent.model.plist.example`, not as a desktop app. A GUI launcher that
-binds the same inference port will take it at login and the service unit will crash-loop, which
-is not obvious from the symptom. Remove the desktop app from login items.
+`config/launchd/com.localagent.model.plist.example`. A GUI launcher that binds the same
+inference port will take it at login and the service unit will crash-loop, which is hard to
+diagnose from the symptom. Remove the desktop app from login items.
 
 ## 2. Repo and configuration
 
@@ -74,8 +73,8 @@ bind the mesh interface only:
 lsof -i -P | grep -E 'python|ntfy'    # must show the mesh address, never 0.0.0.0
 ```
 
-Set `HUB_HOST` and `NTFY_BASE` to the mesh address. Being on the mesh is not authentication,
-and the hub still requires its token on every mutating endpoint.
+Set `HUB_HOST` and `NTFY_BASE` to the mesh address. The hub still requires its token on every
+mutating endpoint; mesh access only makes it reachable.
 
 ## 4. Push notifications
 
@@ -84,7 +83,7 @@ Run a self-hosted push server bound to the mesh interface, configured from
 
 The official release binary for some platforms is client-only and has no `serve` subcommand, so
 you may need to build the server from source. If the host's egress is already locked, vendor
-the dependencies on another machine and transfer them over the mesh rather than opening a
+the dependencies on another machine and transfer them over the mesh, which avoids opening a
 build-time hole.
 
 Subscribe the phone to the topic and add the dashboard to its home screen.
@@ -115,8 +114,8 @@ Three things behave differently than you would expect:
    re-exec stub whose real binary is inside a framework directory, and a rule written against
    the stub matches nothing. Find the real path first.
 3. Hostname rules do not work under a mesh DNS resolver, because the resolver answers the
-   lookup and the firewall never sees the A-record. Scope by process instead, giving any
-   network-facing job its own dedicated binary.
+   lookup and the firewall never sees the A-record. Scope by process, giving any network-facing
+   job its own dedicated binary.
 
 Then run the negative test. The lock-down is unverified without it:
 

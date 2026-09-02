@@ -5,11 +5,12 @@ leak anything, on the assumption that it can be manipulated by the mail it reads
 
 ## The architectural decision
 
-The obvious approach is to give the agent a mail tool, such as an MCP server or a skill
-holding the credential. This design does not do that.
+A trusted non-agent process holds the mail credential and makes all the network calls. The
+agent reads only the files that process writes.
 
-Because the agent is assumed to be injectable by the mail it reads, a mail tool in the agent's
-hands is a tool an attacker can reach by sending an email. Ingestion is therefore inverted:
+The reason is that a mail tool held by the agent is a tool an attacker can reach by sending an
+email, given that the agent is assumed to be injectable by the mail it reads. So ingestion runs
+in one direction:
 
 ```
   trusted NON-agent fetcher            agent (air-gapped from the mailbox)
@@ -37,7 +38,7 @@ nothing available to carry it out.
   password because it supports a real read-only scope. IMAP app passwords grant read and send
   together with no read-only option, so they cannot express the constraint this design needs.
 - **A dedicated OAuth client**, separate from any other client on the account, so the agent's
-  access can be revoked on its own without affecting anything else.
+  access can be revoked on its own.
 - **The consent screen stays in testing mode** with the owner as the only test user. There is
   no third party to publish for, and this avoids restricted-scope verification.
 - **Tokens are minted interactively.** `gmail_auth.py` runs a stdlib loopback and PKCE flow and
@@ -46,8 +47,8 @@ nothing available to carry it out.
 - **Credentials live outside the repo and outside the agent's reach**, with the directory at
   `700` and files at `600`.
 - `gmail_fetch.py` **re-checks the read-only scope at startup** and exits if the token carries
-  anything else. This is a second, independent check, because a mutating credential in this
-  system would be difficult to contain.
+  anything else. This is a second, independent check, since a mutating credential in this system
+  would be difficult to contain.
 
 ## The fetcher
 
@@ -58,7 +59,7 @@ code rather than assumed from the OAuth scope:
   `gmail.readonly`.
 - **Least data:** headers plus a truncated plaintext body. Attachments are never downloaded.
 - **Audited:** every run logs one `email.read` event to Tier A with the host and credential id.
-  The fetcher logs its own actions because the harness does not log them for it.
+  The fetcher logs its own actions, since the harness does not log them for it.
 - **Idempotent:** a message already present in `inbox/` is skipped, so a doubled or missed
   scheduled run has no effect.
 - **Stdlib only:** the Gmail API is plain REST and JSON, so token refresh, list and get are a
@@ -83,8 +84,8 @@ else. Application firewalls key their rules on the real binary, so a dedicated i
 distinct identity that can hold a network allow while every other interpreter on the host stays
 restricted to loopback. Even a broad allow on that binary covers exactly one program.
 
-The cloud-escalation path uses the same pattern. The general form is that when a rule cannot be
-scoped by destination, it can be scoped by process.
+The cloud-escalation path uses the same pattern: a rule that cannot be scoped by destination
+can be scoped by process instead.
 
 Two things to know before writing firewall rules:
 
@@ -104,9 +105,8 @@ the record, where it sits as inert text on disk.
 The triage prompt marks the message body as data rather than instructions, and asks the model
 to flag anything that reads as an instruction aimed at it.
 
-That flag is a note for the human digest, not a control. A model that can be talked into
-complying can also be talked out of flagging, so nothing gates on it. The containment is the
-absent tool, not the model's judgment.
+That flag is a note for the human digest. Nothing gates on it, since a model that can be talked
+into complying can also be talked out of flagging. The containment comes from the absent tool.
 
 ## Record lifecycle
 
@@ -129,8 +129,7 @@ Sending is the first write capability in the system, so it is built last and sep
 4. A separate trusted process, holding a separate narrow send credential the agent cannot read,
    performs the send and logs it as a Tier B event.
 
-The gate is structural at each step. There is no prompt for the agent to bypass, because the
-agent is not in the send path.
+The gate is structural at each step, and the agent is not in the send path at all.
 
 ## Operational notes
 

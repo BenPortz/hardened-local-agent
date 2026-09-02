@@ -48,10 +48,9 @@ You hand the agent a project list. It works each project until it reaches a deci
 make on its own, asks a single question, parks that project, and moves to the next one. Your
 answer un-parks it.
 
-This is not parallel compute. A single-GPU host runs one inference at a time, so the scheduler
-is task-switching rather than working on several projects at once. What it saves is waiting
-time: a project blocked on a question you have not read yet is using no compute, so the
-scheduler can spend that time on a different project instead of idling.
+A single-GPU host runs one inference at a time, so the scheduler task-switches between
+projects. What it saves is waiting time: a project blocked on a question you have not read yet
+is using no compute, so the scheduler spends that time on a different project.
 
 See [orchestrator.md](orchestrator.md) for the state machine.
 
@@ -61,9 +60,9 @@ Content enters through out-of-band fetchers: trusted, non-agent processes that p
 read-only and write inert records to disk. The agent then reads those files with a minimal
 toolset.
 
-The more obvious design is to give the agent a mail tool. This one does not, because the agent
-is assumed to be injectable, and so it should not hold a credential or a network tool that
-could be turned against it. See [email-ingestion.md](email-ingestion.md).
+The credential and the network calls stay with the fetcher. The agent is assumed to be
+injectable, so it should not hold a credential or a network tool that could be turned against
+it. See [email-ingestion.md](email-ingestion.md).
 
 ### Security
 
@@ -95,11 +94,11 @@ are back at the machine, and gates that are inconvenient tend to get turned off.
 
 Three notes from building it:
 
-- **Being on the mesh is not authentication:** mutating endpoints require a bearer token, read
-endpoints are open. A device on the mesh is reachable, not authorized.
-- **Self-hosted push only arrives while the phone is on the mesh:** this is a known limitation.
-The alternative is routing approval prompts through a third-party cloud, which does not fit
-the rest of the design. The dashboard shows anything that was missed.
+- **Mutating endpoints require a bearer token:** read endpoints are open. Mesh access makes a
+device reachable; authorization is a separate check.
+- **Self-hosted push only arrives while the phone is on the mesh:** a known limitation, kept
+because the alternative is routing approval prompts through a third-party cloud. The dashboard
+shows anything that was missed.
 - **A dashboard that auto-refreshes will overwrite what you are typing:** re-rendering the list
 on a timer wipes a half-composed answer and dismisses the phone keyboard. The fix is to skip
 the re-render while any input holds focus or content.
@@ -127,8 +126,8 @@ frontier model. This is an exception to the local-only rule, so it is kept narro
 to a single question at a time.
 
 The dashboard's **Ask** surface is separate from handing the agent a project. An ask is a
-single question with a single answer: pick an agent, ask, read the reply. It is not a queued
-multi-step project. You choose `local` (the default, which sends nothing), or a cloud agent.
+single question with a single answer: pick an agent, ask, read the reply. You choose `local`
+(the default, which sends nothing), or a cloud agent.
 
 The gates on it:
 
@@ -140,16 +139,15 @@ and choosing a cloud agent is itself the approval of exactly that content.
 - **No API keys on the host:** escalation runs already-authenticated subscription CLIs as
 subprocesses. Usage stops at the plan limit rather than billing per token, and there is no
 long-lived key stored on the agent host.
-- **A daily call cap:** a backstop against a runaway loop. It is not a spend cap, since
-subscription usage has no marginal cost.
+- **A daily call cap:** a backstop against a runaway loop. Subscription usage has no marginal
+cost, so the cap exists to bound call volume rather than spend.
 - **Audited and pushed:** every cloud call is a Tier B event, logged with the external host and
 pushed to the phone as it happens.
 - **Egress-scoped:** the firewall allows only those runner binaries to reach only those API
 hosts.
 
 The fallback chain is `claude → chatgpt → local model`, and the answer records which steps
-failed and why. This means a plan limit, a missing CLI or a network problem produces a weaker
-answer rather than an error.
+failed and why. A plan limit, a missing CLI or a network problem still produces an answer.
 
 One planned extension is not implemented here: a sanitization pass that replaces identifying
 details with placeholders before anything is sent, keeps the mapping local, and restores the
@@ -160,8 +158,8 @@ so the content leaving the machine can be checked directly.
 
 **Assume every model-output contract will be violated.** Small models bullet required markers,
 wrap fields across lines, skip steps, and re-ask questions that were already answered. So every
-parser here has layered fallbacks, and every loop has a hard stop. A runaway clarification
-cycle is ended by a counter rather than by prompt wording.
+parser here has layered fallbacks, and every loop has a hard stop. A counter ends a runaway
+clarification cycle.
 
 **Stdlib only.** No third-party packages anywhere in this repo. An egress-locked host cannot
 install anything casually, and each dependency is another component making network calls and
@@ -169,10 +167,10 @@ another supply chain to trust. The trade is some convenience for a much smaller 
 graph.
 
 **Treat absence as a signal.** The daily digest runs on a schedule, so a missing digest is the
-alarm. A host that has stopped working cannot report that itself, which means the health check
-has to be something that stops happening rather than something that starts.
+alarm. A host that has stopped working cannot report that itself, so the health check is
+something that stops happening.
 
-**Write down the reasoning, not just the result.** The non-obvious decisions here — why
-ingestion is out-of-band, why the send gate is not a harness prompt, why the toolset is
-restricted — look arbitrary once the context is forgotten, and are easy to remove without
-noticing what they were holding up.
+**Write down the reasoning behind each decision.** The non-obvious ones here — why ingestion is
+out-of-band, why the send gate sits outside the agent, why the toolset is restricted — look
+arbitrary once the context is forgotten, and are easy to remove without noticing what they
+were holding up.

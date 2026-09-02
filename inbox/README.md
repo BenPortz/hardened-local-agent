@@ -6,8 +6,8 @@ using a memory-only toolset, so the agent has no network or send tool and cannot
 instructions embedded in a message. See
 [`docs/email-ingestion.md`](../docs/email-ingestion.md) for the reasoning behind that split.
 
-This is not a mailbox mirror, and nothing here sends or deletes. The fetcher makes only API GET
-calls and refuses to run unless the token's scope is exactly `gmail.readonly`.
+Nothing here sends or deletes. The fetcher makes only API GET calls and refuses to run unless
+the token's scope is exactly `gmail.readonly`.
 
 Real records are gitignored. `example-inbox-item.json` shows the shape.
 
@@ -40,6 +40,6 @@ Real records are gitignored. `example-inbox-item.json` shows the shape.
 ## On the `injection` field
 
 The model is asked to flag content that reads as instructions aimed at it. That flag is a note
-for the human digest, not a control. A model that can be talked into complying can also be
-talked out of flagging, so nothing gates on this value. It is logged and surfaced, and the
-containment is that the triage step holds no tool capable of acting.
+for the human digest. Nothing gates on this value, since a model that can be talked into
+complying can also be talked out of flagging. It is logged and surfaced, and the containment
+comes from the triage step holding no tool capable of acting.

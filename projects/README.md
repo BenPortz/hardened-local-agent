@@ -18,5 +18,5 @@ with everything it wrote back.
 
 The state machine is testable without the model, the hub and the scheduler share one
 representation with no schema layer in between, and inspecting or repairing state is
-straightforward. A queue this size does not need a database, and using one would mean a schema
-change every time a field moves.
+straightforward. Using a database at this size would add a schema change every time a field
+moves.

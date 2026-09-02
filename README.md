@@ -9,9 +9,9 @@ The agent works through a queue of projects one step at a time. When it reaches 
 cannot make on its own, it asks a question, parks that project, and moves to the next one. You
 answer from your phone and it picks the project back up.
 
-Most of the work in this repo is in the containment around the agent rather than in the agent
-loop. The design assumes the agent can be manipulated by the content it reads, and is arranged
-so that this has limited effect.
+Most of the work in this repo is in the containment around the agent. The design assumes the
+agent can be manipulated by the content it reads, and is arranged so that this has limited
+effect.
 
 ```
   Dedicated agent host (16GB Apple Silicon, encrypted, egress-locked)
@@ -34,8 +34,8 @@ There are two reasons, and they happen to want the same system.
 
 The first is cost. Repetitive or bulk work — triaging a mailbox, summarizing a backlog,
 producing first drafts — spends frontier-model tokens on tasks a 14B-class local model can
-handle. Running those locally costs electricity instead. Frontier models are still available,
-but as a per-question escalation rather than the default.
+handle. Running those locally costs electricity instead. Frontier models remain available as a
+per-question escalation.
 
 The second is privacy. The tasks most worth automating tend to involve content you would
 rather not hand to a third party. Running the model locally covers half of that. The other
@@ -46,10 +46,10 @@ design below is about.
 
 The agent should be treated as untrusted from the moment it reads an email.
 
-The realistic attack is not malware on disk. It is indirect prompt injection: text inside a
-document or message persuades the agent to misuse the access it legitimately has — sending,
-deleting, leaking, or writing itself a new capability. Nothing appears on the machine that a
-scanner would flag, because the agent is acting normally with valid credentials.
+The realistic attack is indirect prompt injection: text inside a document or message persuades
+the agent to misuse the access it legitimately has — sending, deleting, leaking, or writing
+itself a new capability. Nothing appears on the machine that a scanner would flag, because the
+agent is acting normally with valid credentials.
 
 Two things follow from that, and they shape most of the decisions in this repo:
 
@@ -69,9 +69,9 @@ See [docs/security-model.md](docs/security-model.md).
 | **Default-deny egress firewall** | A compromised agent has nowhere to send anything. The single most useful control. |
 | **Out-of-band ingestion** | A trusted non-agent process fetches mail read-only into inert local files. The agent never holds the mail credential and never makes a network call. |
 | **Minimal toolsets per task** | Triage runs with a memory-only toolset: no network tool, no send tool. An injection that persuades the model still has nothing available to act with. |
-| **Structural approval gates** | The agent produces a draft; a separate human-approved path performs the send. This is not a harness prompt, since headless runs bypass those. |
+| **Structural approval gates** | The agent produces a draft; a separate human-approved path performs the send. Enforced outside the agent, since headless runs bypass harness prompts. |
 | **Least-privilege credentials** | A read-only OAuth scope, re-checked by the fetcher at startup, which exits if the token carries anything broader. |
-| **Deterministic audit** | Every action is appended to JSONL and compared against allowlists. No model judges the logs; a model may only reformat a digest for reading. |
+| **Deterministic audit** | Every action is appended to JSONL and compared against allowlists. Comparison is mechanical; a model may reformat a digest for reading. |
 
 ## Repo layout
 
@@ -110,8 +110,8 @@ plain REST and JSON, so token refresh, list and get are a handful of `urllib` ca
 
 **Every model-output contract has a deterministic backstop.** Small local models drift from
 formatting instructions: they bullet required markers, wrap fields across lines, and re-ask
-questions that were already answered. The parsers have layered fallbacks, and a runaway
-clarification loop is ended by a counter rather than by prompt wording.
+questions that were already answered. The parsers have layered fallbacks, and a counter ends a
+runaway clarification loop.
 
 **Restricting toolsets serves two purposes.** It is the security control, and it is also the
 main performance lever: the full tool-schema block is tens of kilobytes reprocessed on every
@@ -120,9 +120,9 @@ agentic turn, which dominates step latency on a laptop-class host.
 **Mode switching does not require a redeploy.** `config/mode.env` decides whether the
 scheduler drives the queue or idles, and it is read each loop iteration.
 
-**Escalation degrades rather than fails.** A cloud ask falls back through
-claude → chatgpt → local model, and the answer carries a note of what failed along the way, so
-a plan limit or a missing CLI produces a worse answer instead of an error.
+**Escalation degrades gracefully.** A cloud ask falls back through claude → chatgpt → local
+model, and the answer carries a note of what failed along the way, so a plan limit or a missing
+CLI still produces an answer.
 
 **A missing signal is the alarm.** The daily digest runs on a schedule, so its absence is what
 indicates a problem. A host that has stopped working cannot report that itself.
@@ -130,10 +130,9 @@ indicates a problem. A host that has stopped working cannot report that itself.
 ## Status
 
 This is a personal reference implementation, published as a portfolio piece. The code is the
-real implementation and the docs describe the design and the reasoning behind it. It is not
-packaged for general use: standing it up means following
-[docs/deployment.md](docs/deployment.md) on a host you control, and the security properties
-depend on the host-level controls described there being in place.
+real implementation and the docs describe the design and the reasoning behind it. Standing it
+up means following [docs/deployment.md](docs/deployment.md) on a host you control, and the
+security properties depend on the host-level controls described there being in place.
 
 Built on the [Hermes Agent](https://github.com/NousResearch/hermes-agent) harness and an
 OpenAI-compatible local inference server. Both are replaceable: the harness is invoked as a

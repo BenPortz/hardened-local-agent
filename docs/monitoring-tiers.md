@@ -1,8 +1,8 @@
 # Monitoring and audit — the A/B/C/D tiers
 
 Cadence is matched to risk. High-risk events notify immediately, routine events are reviewable
-in context afterwards, and patterns are aggregated over time. The rule that keeps the output
-readable is to surface what is new or unknown rather than what is expected.
+in context afterwards, and patterns are aggregated over time. What keeps the output readable is
+surfacing whatever is new or unknown.
 
 | Tier | What | Cadence | Implementation |
 |------|------|---------|----------------|
@@ -14,7 +14,7 @@ readable is to surface what is new or unknown rather than what is expected.
 
 ## What Tier B fires on
 
-Five event classes, and nothing else:
+Five event classes:
 
 1. An outbound send (email, chat, and so on)
 2. A delete or a settings change
@@ -70,15 +70,14 @@ Example output:
 
 ## Design notes
 
-**No model in the detection path.** Tiers A and D are diffs, allowlist lookups and log
-parsing. A model may reformat a digest for readability downstream, but it does not decide
-whether anything is safe. It is unreliable at self-judgment, and it is injectable by the
-content it would be reviewing.
+**Detection is deterministic.** Tiers A and D are diffs, allowlist lookups and log parsing. A
+model may reformat a digest for readability downstream. It never decides whether anything is
+safe: it is unreliable at self-judgment, and it is injectable by the content it would be
+reviewing.
 
-**No alerting on routine events.** Tier B covers the five classes above and nothing more. A
-monitoring surface that notifies too often stops being read, which leaves the appearance of
-oversight without the substance.
+**Alerting is limited to the five classes above.** A monitoring surface that notifies too often
+stops being read, which leaves the appearance of oversight without the substance.
 
-**Nothing in the log path blocks.** Alerting is best-effort and its failures are swallowed by
+**Logging never blocks on alerting.** Alerting is best-effort and its failures are swallowed by
 the caller, so a push server being down cannot stop an event from being recorded. The log is
 the source of truth and the alert sits on top of it.
