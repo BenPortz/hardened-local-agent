@@ -32,8 +32,8 @@ effect.
 
 There are two reasons, and they happen to want the same system.
 
-The first is cost. Repetitive or bulk work — triaging a mailbox, summarizing a backlog,
-producing first drafts — spends frontier-model tokens on tasks a 14B-class local model can
+The first is cost. Repetitive or bulk work, such as triaging a mailbox, summarizing a backlog
+or producing first drafts, spends frontier-model tokens on tasks a 14B-class local model can
 handle. Running those locally costs electricity instead. Frontier models remain available as a
 per-question escalation.
 
@@ -47,14 +47,14 @@ design below is about.
 The agent should be treated as untrusted from the moment it reads an email.
 
 The realistic attack is indirect prompt injection: text inside a document or message persuades
-the agent to misuse the access it legitimately has — sending, deleting, leaking, or writing
+the agent to misuse the access it legitimately has: sending, deleting, leaking, or writing
 itself a new capability. Nothing appears on the machine that a scanner would flag, because the
 agent is acting normally with valid credentials.
 
 Two things follow from that, and they shape most of the decisions in this repo:
 
 1. The model cannot be the gate. A model that can be talked into taking an action can also be
-   talked into reporting that it did not. Gates need to be structural — enforced by code the
+   talked into reporting that it did not. Gates need to be structural, enforced by code the
    agent does not call, using credentials the agent does not hold.
 2. Detection does not undo a leak. So most of the effort goes into preventive controls (egress
    lock, least-privilege credentials, capability limits) and the rest into detective ones (the
@@ -140,4 +140,4 @@ subprocess behind one constant, and the model endpoint is one line of config.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

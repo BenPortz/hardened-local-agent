@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tier D — nightly roll-up (trends & anomalies across a day).
+"""Tier D: nightly roll-up (trends & anomalies across a day).
 
 Aggregates the Tier A JSONL log for pattern-spotting, not per-action review. Run nightly:
 

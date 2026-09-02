@@ -1,5 +1,5 @@
 #!/bin/bash
-# Agent host bootstrap (scriptable parts only) — macOS / Apple Silicon.
+# Agent host bootstrap (scriptable parts only). macOS / Apple Silicon.
 # Companion to docs/deployment.md. GUI steps are NOT covered here: full-disk encryption,
 # firewall configuration, and mesh login all need a human at the machine.
 #
@@ -11,7 +11,7 @@ MODEL_REPO="${MODEL_REPO:-<publisher>/<Model-GGUF>:Q4_K_M}"   # a mid-size 4-bit
 MODEL_ALIAS="${MODEL_ALIAS:-localagent:14b}"
 HARNESS_INSTALLER="${HARNESS_INSTALLER:-https://hermes-agent.nousresearch.com/install.sh}"
 
-echo "== [1/4] Pull the local brain (~9GB — needs open egress, run BEFORE the firewall) =="
+echo "== [1/4] Pull the local brain (~9GB, needs open egress, run BEFORE the firewall) =="
 echo "    model: $MODEL_REPO  ->  alias: $MODEL_ALIAS"
 ollama pull "$MODEL_REPO"
 ollama cp "$MODEL_REPO" "$MODEL_ALIAS"
@@ -22,7 +22,7 @@ echo
 echo "== [2/4] Download the agent harness installer (NOT run automatically) =="
 curl -fsSL "$HARNESS_INSTALLER" -o "$HOME/install-harness.sh"
 echo "Saved to ~/install-harness.sh"
-echo "Review it before running — check which hosts it fetches from, whether it edits your"
+echo "Review it before running. Check which hosts it fetches from, whether it edits your"
 echo "shell profile, and any sudo use:   less ~/install-harness.sh"
 read -r -p "Reviewed and ready to run the installer now? [y/N] " yn
 if [[ "${yn:-n}" == "y" || "${yn:-n}" == "Y" ]]; then
@@ -33,7 +33,7 @@ if [[ "${yn:-n}" == "y" || "${yn:-n}" == "Y" ]]; then
   echo "  base_url = http://127.0.0.1:11434/v1"
   echo "  model    = $MODEL_ALIAS"
   echo "  enable the skill-write and memory-write approval flags"
-  echo "Install browser-automation deps NOW if you want them — they need egress."
+  echo "Install browser-automation deps NOW if you want them; they need egress."
 else
   echo "Skipped. Run later with: bash ~/install-harness.sh"
 fi
@@ -67,7 +67,7 @@ Scriptable parts done. Remaining MANUAL steps, in this order:
      model-weights host now that the pull is done.
      Add explicit BLOCK rules for the OS network utilities: the
      "allow signed OS programs" default silently permits them.
-  4. Negative test (REQUIRED — the lock-down is unproven without it):
+  4. Negative test (REQUIRED, the lock-down is unproven without it):
        python3 -c "import socket;socket.create_connection(('1.1.1.1',443),timeout=5)"
          -> must FAIL, from every interpreter that matters
        ollama run <alias> "hello"

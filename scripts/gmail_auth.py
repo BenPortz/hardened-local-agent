@@ -35,7 +35,7 @@ def _load_client(path: str) -> tuple[str, str]:
     d = json.loads(Path(path).read_text(encoding="utf-8"))
     c = d.get("installed") or d.get("web")
     if not c:
-        sys.exit("client_secret.json has no 'installed'/'web' section — is this a Desktop OAuth client?")
+        sys.exit("client_secret.json has no 'installed'/'web' section. Is this a Desktop OAuth client?")
     return c["client_id"], c["client_secret"]
 
 
@@ -87,7 +87,7 @@ def mint(client_path: str, out_path: str) -> None:
     if not _Catch.code:
         sys.exit("timed out waiting for consent")
     if _Catch.state != state:
-        sys.exit("state mismatch — aborting (possible CSRF)")
+        sys.exit("state mismatch, aborting (possible CSRF)")
 
     data = urllib.parse.urlencode({
         "client_id": client_id, "client_secret": client_secret,
@@ -121,7 +121,7 @@ def mint(client_path: str, out_path: str) -> None:
     if not out["refresh_token"]:
         print("WARNING: no refresh_token returned (Google returns one only on first consent).\n"
               "  Revoke this app at myaccount.google.com/permissions, then re-run to get one.")
-    print(f"OK: wrote {out_path}  (scope: gmail.readonly). Keep this file private — do not share it.")
+    print(f"OK: wrote {out_path}  (scope: gmail.readonly). Keep this file private, do not share it.")
 
 
 def main() -> None:

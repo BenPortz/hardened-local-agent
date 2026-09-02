@@ -53,11 +53,11 @@ inspecting or repairing state is straightforward. A queue this size is well serv
 
 The loop drains work in this order:
 
-1. **Asks** — single-turn questions from the dashboard. Someone is waiting on a reply, so these
+1. **Asks:** single-turn questions from the dashboard. Someone is waiting on a reply, so these
    run before anything else.
-2. **Projects** — answered clarifications first, then fresh projects by priority. A project
+2. **Projects:** answered clarifications first, then fresh projects by priority. A project
    whose question you have already answered should not wait behind a new one.
-3. **Ambient work** — email triage and similar background tasks, only when nothing above is
+3. **Ambient work:** email triage and similar background tasks, only when nothing above is
    pending. It fills idle time without competing with a waiting person.
 
 ## Contract with the model, and its backstops

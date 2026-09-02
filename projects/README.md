@@ -1,4 +1,4 @@
-# projects/ — the orchestrator work queue
+# The orchestrator work queue (projects/)
 
 One JSON file per project. The hub writes them when you enqueue from the dashboard; the
 scheduler reads, steps, and rewrites them. See
@@ -6,8 +6,8 @@ scheduler reads, steps, and rewrites them. See
 `example-project.json` for the shape.
 
 States: `researching → awaiting-input → in-progress → blocked → done`. The scheduler picks the
-highest-priority *actionable* project — `in-progress` (a clarification you just answered) or
-`researching` (fresh) — and works it one step at a time.
+highest-priority actionable project, either `in-progress` (a clarification you just answered)
+or `researching` (fresh), and works it one step at a time.
 
 In `default` mode this folder is ignored entirely; you talk to the agent directly.
 

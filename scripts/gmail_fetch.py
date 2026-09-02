@@ -3,23 +3,23 @@
 
 A TRUSTED, NON-AGENT process. It pulls recent messages read-only via the Gmail REST API and
 writes each as an inert record into inbox/<id>.json for the scheduler to triage with the
-agent under a minimal toolset. The agent NEVER holds the mail credential or a network tool —
-the design assumes the model will comply with instructions embedded in the mail it reads, so
+agent under a minimal toolset. The agent NEVER holds the mail credential or a network tool.
+The design assumes the model will comply with instructions embedded in the mail it reads, so
 it is kept air-gapped from the mail account entirely. See docs/email-ingestion.md.
 
 Security invariants (belt-and-suspenders on top of the OAuth scope + the firewall allow):
-  * Read-only — only HTTP GET to the Gmail API; the fetcher refuses to run unless the token's
+  * Read-only: only HTTP GET to the Gmail API; the fetcher refuses to run unless the token's
     scope is exactly gmail.readonly (so a mis-scoped token can't be used to mutate the mbox).
-  * Least data — headers + a truncated plaintext body only; attachments are never downloaded.
-  * Audited — every fetch run logs one email.read event to Tier A (host + credential id).
-  * Idempotent — a message already present in inbox/ is skipped.
+  * Least data: headers + a truncated plaintext body only; attachments are never downloaded.
+  * Audited: every fetch run logs one email.read event to Tier A (host + credential id).
+  * Idempotent: a message already present in inbox/ is skipped.
 
 Stdlib only, by design: the Gmail API is plain REST/JSON, so token-refresh + list + get is a
 handful of urllib calls. That avoids google-api-python-client entirely, which matters on a
 host whose egress is locked down (no pip), and keeps the dependency + egress surface minimal.
 
 Credential-free testing: `python3 gmail_fetch.py --self-test` exercises parse_message() and
-the record writer against a synthetic Gmail API payload — no token, no network.
+the record writer against a synthetic Gmail API payload, with no token and no network.
 """
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ def now() -> str:
 
 
 # ---------------------------------------------------------------------------
-# OAuth token handling (stdlib) — load, scope-check, refresh
+# OAuth token handling (stdlib): load, scope-check, refresh
 # ---------------------------------------------------------------------------
 def load_token() -> dict:
     return json.loads(TOKEN_FILE.read_text(encoding="utf-8"))
@@ -97,7 +97,7 @@ def ensure_fresh(tok: dict) -> dict:
         return tok
     refresh = tok.get("refresh_token")
     if not refresh:
-        raise SystemExit("token expired and no refresh_token present — re-run the OAuth flow")
+        raise SystemExit("token expired and no refresh_token present, re-run the OAuth flow")
     data = urllib.parse.urlencode({
         "client_id": tok["client_id"],
         "client_secret": tok["client_secret"],
@@ -136,7 +136,7 @@ def get_message(token: str, mid: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Pure parsing — testable without network
+# Pure parsing, testable without network
 # ---------------------------------------------------------------------------
 def _b64url(data: str) -> str:
     pad = "=" * (-len(data) % 4)
@@ -160,7 +160,7 @@ def _extract_body(payload: dict) -> str:
             got = _extract_body(part)
             if got and part.get("mimeType") == "text/plain":
                 return got
-        # No text/plain — take the first non-empty text/html, stripped of tags.
+        # No text/plain, so take the first non-empty text/html, stripped of tags.
         for part in payload["parts"]:
             if part.get("filename"):
                 continue

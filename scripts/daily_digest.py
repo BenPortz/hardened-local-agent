@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Daily digest push — one morning notification that doubles as a liveness alarm.
+"""Daily digest push: one morning notification that doubles as a liveness alarm.
 
 Gathers service health (hub / ntfy / ollama / scheduler), project states, and a Tier D-style
 roll-up of the last 24h of the audit log, then publishes it to the phone via alert.push().
@@ -11,7 +11,7 @@ Runs under a scheduled service (see config/launchd/). Manual run:
     python3 scripts/daily_digest.py            # push to phone
     python3 scripts/daily_digest.py --dry-run  # print only
 
-Deterministic only — no LLM judgment (see docs/monitoring-tiers.md).
+Deterministic only, no LLM judgment (see docs/monitoring-tiers.md).
 """
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def scheduler_running() -> bool:
             fcntl.flock(f, fcntl.LOCK_UN)
             return False  # we got the lock, so nobody else holds it
     except OSError:
-        return False  # no lock file / unreadable — scheduler can't be holding it
+        return False  # no lock file / unreadable, so the scheduler can't hold it
 
 
 def mode() -> str:
@@ -139,7 +139,7 @@ def render() -> tuple[str, str, str]:
         f"Disk free: {free_gb} GB",
     ]
     day = datetime.now().strftime("%a %Y-%m-%d")
-    title = f"Agent digest — {day}" + ("" if all_up else " — SERVICE DOWN")
+    title = f"Agent digest {day}" + ("" if all_up else " (SERVICE DOWN)")
     return title, "\n".join(lines), "default" if all_up else "high"
 
 

@@ -14,7 +14,7 @@
   <!-- Flash attention plus a quantized KV cache are what let a long context (the harness
        needs one for its tool schemas) fit alongside ~9GB of quantized weights on a 16GB
        unified-memory machine: an f16 KV cache at 64K is several times the size of a q4_0
-       one. OLLAMA_HOST is pinned to loopback — the model server must never listen on a
+       one. OLLAMA_HOST is pinned to loopback, since the model server must never listen on a
        routable interface.
 
        Run the model server as a managed service, not as a desktop app: a GUI launcher that

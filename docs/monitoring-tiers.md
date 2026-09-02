@@ -1,4 +1,4 @@
-# Monitoring and audit — the A/B/C/D tiers
+# Monitoring and audit: the A/B/C/D tiers
 
 Cadence is matched to risk. High-risk events notify immediately, routine events are reviewable
 in context afterwards, and patterns are aggregated over time. What keeps the output readable is
@@ -6,11 +6,11 @@ surfacing whatever is new or unknown.
 
 | Tier | What | Cadence | Implementation |
 |------|------|---------|----------------|
-| **A — Silent log** | Every agent action, append-only | Always, no notification | `scripts/audit_logger.py` — structured JSONL; the source of truth |
-| **B — Real-time alert** | High-risk events only | As they happen | `scripts/alert.py` — push and desktop notification |
-| **C — Per-workflow digest** | Summary of what one routine did | End of each workflow | `scripts/workflow_digest.py` — the main review surface |
-| **D — Nightly roll-up** | Trends and anomalies across the day | Nightly | `scripts/nightly_rollup.py` — aggregates Tier A |
-| **D+ — Daily digest push** | Service health, project states, 24h roll-up, pushed to the phone | 08:00 daily | `scripts/daily_digest.py` — a missing digest indicates a problem; any service down raises the priority |
+| **A: Silent log** | Every agent action, append-only | Always, no notification | `scripts/audit_logger.py`, structured JSONL and the source of truth |
+| **B: Real-time alert** | High-risk events only | As they happen | `scripts/alert.py`, push and desktop notification |
+| **C: Per-workflow digest** | Summary of what one routine did | End of each workflow | `scripts/workflow_digest.py`, the main review surface |
+| **D: Nightly roll-up** | Trends and anomalies across the day | Nightly | `scripts/nightly_rollup.py`, aggregates Tier A |
+| **D+: Daily digest push** | Service health, project states, 24h roll-up, pushed to the phone | 08:00 daily | `scripts/daily_digest.py`. A missing digest indicates a problem; any service down raises the priority |
 
 ## What Tier B fires on
 
@@ -24,7 +24,7 @@ Five event classes:
 
 Everything else is logged at Tier A and summarized at Tier C without interrupting anyone.
 
-## Tier A — audit-log schema
+## Tier A: audit-log schema
 
 One JSON object per line:
 
@@ -46,12 +46,12 @@ One JSON object per line:
 `new_vs_known` is computed against the allowlists in `allowlists/`. Anything marked `NEW` is a
 candidate for a Tier B alert.
 
-## Tier C — per-workflow digest
+## Tier C: per-workflow digest
 
 Example output:
 
 ```
-[morning-email · 07:00–07:02]  6 actions
+[morning-email · 07:00-07:02]  6 actions
   reads: 12 emails (gmail, known)
   drafts: 2 replies  → AWAITING APPROVAL
   skills used: summarize_thread (known), label_email (known)
@@ -61,7 +61,7 @@ Example output:
   ⚠ Tier B events: 0
 ```
 
-## Tier D — nightly roll-up
+## Tier D: nightly roll-up
 
 - skill-creation rate, and which skills
 - new external hosts seen, count and list

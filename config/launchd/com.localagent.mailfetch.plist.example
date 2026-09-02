@@ -27,8 +27,9 @@
 
   <!-- Every 15 min. The fetch is idempotent (a message already in inbox/ is skipped),
        so a missed or doubled run is harmless.
-       NOTE: --max caps the LISTING, not the count of new records, so a large cold-start
-       backlog does not drain on its own — widen --query/--max once to catch up. -->
+       NOTE: the max flag caps the LISTING, not the count of new records, so a large
+       cold-start backlog does not drain on its own; widen the query and max flags once
+       to catch up. -->
   <key>StartInterval</key>
   <integer>900</integer>
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optional cloud escalation, via SUBSCRIPTION CLIs only — no API keys.
+"""Optional cloud escalation, via SUBSCRIPTION CLIs only. No API keys.
 
 claude  -> Claude Code CLI (`claude -p`), logged in with an existing subscription.
 chatgpt -> Codex CLI (`codex exec`), logged in with an existing subscription.
@@ -10,11 +10,11 @@ When that (or anything else) fails, the scheduler falls back down the chain
 cloud -> cloud -> local model, so a question always gets SOME answer.
 
 This is a deliberate, per-question EXCEPTION to the local-only rule, so it is
-narrow by construction: it sends EXACTLY the question the owner typed — no local
+narrow by construction: it sends EXACTLY the question the owner typed, with no local
 context, no files, no history (content minimization, see docs/architecture.md).
 
 Config via config/cloud_agents.env: CLOUD_DAILY_CAP (calls/day; a runaway-loop
-backstop, not a spend cap — subscription usage has no marginal cost).
+backstop, not a spend cap, since subscription usage has no marginal cost).
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ CLI_SEARCH_DIRS = [Path.home() / ".local/bin", Path.home() / ".claude/local",
 DEFAULTS = {"CLOUD_DAILY_CAP": "20"}
 
 SYSTEM = ("You are answering a single question relayed from a personal assistant "
-          "system. Reply with the answer only — complete, direct, and concise. "
+          "system. Reply with the answer only: complete, direct, and concise. "
           "There is no follow-up conversation.")
 
 
@@ -94,7 +94,7 @@ def _run_cli(cmd: list[str], timeout: int = 300) -> str:
         raise CloudAskError(f"subscription CLI timed out after {timeout}s")
     out = (proc.stdout or "").strip()
     if proc.returncode != 0 or not out:
-        # plan-limit exhaustion and auth problems surface here — the scheduler
+        # plan-limit exhaustion and auth problems surface here, so the scheduler
         # then falls down the chain (chatgpt -> local model) instead of dying
         err = (proc.stderr or out or "no output").strip()
         raise CloudAskError(f"CLI error: {err[:300]}")
@@ -109,7 +109,7 @@ def run(agent: str, question: str) -> str:
     if not cli:
         name = CLI_BINARIES[agent]
         raise CloudAskError(
-            f"{agent} subscription CLI not installed — install '{name}' on the agent host "
+            f"{agent} subscription CLI not installed. Install '{name}' on the agent host "
             "and log in with the subscription account")
     check_daily_cap(int(config()["CLOUD_DAILY_CAP"]))
     prompt = SYSTEM + "\n\nQUESTION: " + question

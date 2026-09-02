@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Agent Hub — private-mesh API + phone dashboard over the orchestrator project queue.
+"""Agent Hub: private-mesh API + phone dashboard over the orchestrator project queue.
 
 Stdlib only (no pip). In production it binds the host's private-mesh (e.g. WireGuard/
 Tailscale) address so it is reachable ONLY by the owner's own devices, never the LAN or the
-public internet — verify with `lsof -i` after any change. Reads/writes the project records
+public internet. Verify with `lsof -i` after any change. Reads/writes the project records
 defined in docs/orchestrator.md. Mutating endpoints require the token in $AGENT_HOME/hub_token
-(X-Hub-Token header) — being on the mesh is NOT authentication. Every mutation is appended to
+(X-Hub-Token header); being on the mesh is NOT authentication. Every mutation is appended to
 logs/hub-audit.jsonl (Tier A-style).
 
 Run:  python3 hub.py            (env: HUB_HOST, HUB_PORT, AGENT_HOME override)
@@ -20,7 +20,7 @@ PROJECTS = REPO / "projects"
 ASKS = REPO / "asks"
 DRAFTS = REPO / "drafts"   # local-model email reply drafts (review-only, never sent)
 # "local" is the default and never leaves the host. claude/chatgpt escalate to the cloud via
-# scripts/orchestrator/cloud_ask.py — only the verbatim typed question leaves the host, under
+# scripts/orchestrator/cloud_ask.py. Only the verbatim typed question leaves the host, under
 # a daily call cap, audit-logged and pushed. See docs/architecture.md.
 ASK_AGENTS = {"local", "claude", "chatgpt"}
 AUDIT = REPO / "logs" / "hub-audit.jsonl"
@@ -268,7 +268,7 @@ class Handler(BaseHTTPRequestHandler):
             f.unlink()
             audit("draft.delete", m.group(1), "deleted via hub")
             return self._send(200, {"deleted": m.group(1)})
-        # Only terminal-state records are deletable — the scheduler may hold in-flight ones.
+        # Only terminal-state records are deletable, since the scheduler may hold in-flight ones.
         for pattern, folder, done_states, action in (
                 (r"/api/asks/([a-z0-9-]+)", ASKS, {"answered", "failed"}, "ask.delete"),
                 (r"/api/projects/([a-z0-9-]+)", PROJECTS, {"done", "blocked"}, "project.delete")):
@@ -292,7 +292,7 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
 <title>Agent Hub</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B0F1A'/%3E%3Ctext x='16' y='23' font-size='19' font-weight='800' font-family='system-ui' text-anchor='middle' fill='%23F7E23F'%3EH%3C/text%3E%3C/svg%3E">
 <style>
-/* Cyberpunk palette: neon blue = main, yellow = accent. Mobile-first — the phone is the
+/* Cyberpunk palette: neon blue = main, yellow = accent. Mobile-first: the phone is the
    primary approval surface, and the same page serves the desktop. */
 :root{--bg:#0B0F1A;--card:#131A2A;--ink:#E8EDF7;--mut:#8B96B0;--acc:#38CCFF;
 --warn:#F7E23F;--line:#26304A}
@@ -377,7 +377,7 @@ const $=s=>document.querySelector(s);
 function tok(){let t=localStorage.hubToken;if(!t){t=prompt('Hub token (one-time setup):')||'';
 localStorage.hubToken=t}return t}
 async function api(p,opt){const r=await fetch(p,opt);if(r.status===401){
-localStorage.removeItem('hubToken');alert('Bad token — try again');throw 0}return r.json()}
+localStorage.removeItem('hubToken');alert('Bad token, try again');throw 0}return r.json()}
 async function refresh(){try{
 const s=await api('/api/status');
 $('#dot').className='dot '+(s.ok&&s.ollama?'ok':'bad');
@@ -399,7 +399,7 @@ $('#draftlist').innerHTML=dr.map(d=>`<div class="card">
 <button class="del" title="Delete" onclick="delRec('drafts','${d.id}')">✕</button></div>
 <div class="meta">${esc((d.created||'').replace('T',' ').slice(0,16))} · not sent</div>
 ${d.draft_body?`<div class="notes">${esc(d.draft_body)}</div>`:''}
-${d.kind!=='no_reply'?`<div class="meta" style="margin-top:8px">Copy into your mail app to send — auto-send is gated.</div>`:''}
+${d.kind!=='no_reply'?`<div class="meta" style="margin-top:8px">Copy into your mail app to send; auto-send is gated.</div>`:''}
 </div>`).join('')||'<p class="sub">No drafts yet.</p>';
 const ps=await api('/api/projects');
 // Never re-render the list while the user is composing an answer: innerHTML replacement
@@ -417,7 +417,7 @@ ${p.notes?`<div class="notes">${esc(p.notes)}</div>`:''}
 ${q?`<div class="q">❓ ${esc(q.q||'Agent is waiting for input')}</div>
 <textarea id="a-${p.id}" placeholder="Your answer…"></textarea>
 <button onclick="answer('${p.id}')">Send answer & resume</button>`:''}</div>`}).join('')
-||'<p class="sub">Queue is empty — add a project above.</p>';
+||'<p class="sub">Queue is empty. Add a project above.</p>';
 }catch(e){$('#dot').className='dot bad';$('#status').textContent='hub unreachable'}}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';')}
 async function addProject(ev){ev.preventDefault();
@@ -441,6 +441,6 @@ refresh();setInterval(refresh,15000);
 
 if __name__ == "__main__":
     if not token():
-        sys.exit(f"No token file at {TOKEN_FILE} — create it first (see docs/deployment.md).")
+        sys.exit(f"No token file at {TOKEN_FILE}. Create it first (see docs/deployment.md).")
     print(f"Agent Hub on http://{HOST}:{PORT}  (projects: {PROJECTS})")
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()

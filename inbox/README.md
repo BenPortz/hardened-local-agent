@@ -1,4 +1,4 @@
-# inbox/ — read-only email ingestion queue
+# Read-only email ingestion queue (inbox/)
 
 Each `*.json` here is one inert email record written by `scripts/gmail_fetch.py`, a trusted
 non-agent process that reads the mailbox read-only. The scheduler triages these with the agent
@@ -19,8 +19,8 @@ Real records are gitignored. `example-inbox-item.json` shows the shape.
                                                        +-- triage-failed (step error/timeout)
 ```
 
-- `new` — fetched, awaiting triage.
-- `triaged` — the agent produced `triage` (category / priority / summary / draft reply). Any
+- `new`: fetched, awaiting triage.
+- `triaged`: the agent produced `triage` (category / priority / summary / draft reply). Any
   draft reply is **staged text only**; sending is a separate, human-approved step.
 
 ## Fields
@@ -34,7 +34,7 @@ Real records are gitignored. `example-inbox-item.json` shows the shape.
 | `snippet` | the provider's short preview |
 | `body` | truncated plaintext (attachments never downloaded); `body_truncated` flags cut-off |
 | `state` | `new` / `triaged` / `triage-failed` |
-| `triage` | `{category, priority, summary, injection, draft_reply}` — filled by the scheduler |
+| `triage` | `{category, priority, summary, injection, draft_reply}`, filled by the scheduler |
 | `fetched` / `updated` | ISO-8601 UTC timestamps |
 
 ## On the `injection` field

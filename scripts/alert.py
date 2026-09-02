@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tier B — real-time alert for high-risk events.
+"""Tier B: real-time alert for high-risk events.
 
 Fires a desktop notification and a push to the owner's phone the moment a high-blast-radius
 event is logged. Best-effort:
@@ -78,7 +78,7 @@ def notify(event: dict) -> None:
         subprocess.run(["osascript", "-e", script], check=False)
         return
     # Non-macOS (e.g. testing on Windows): print so the event is at least visible.
-    print(f"[TIER-B ALERT] {title} — {body}")
+    print(f"[TIER-B ALERT] {title}: {body}")
 
 
 if __name__ == "__main__":

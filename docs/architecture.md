@@ -4,7 +4,7 @@ This is the architechutre document for a automized hermes agent which can handle
 
 ## The constraint
 
-Sensitive content — email bodies, documents, account data — **must never leave the machine**  
+Sensitive content, including email bodies, documents and account data, **must never leave the machine**  
 and must never enter a third-party training set. Everything the agent reads is processed by a  
 model running on the local host.
 
@@ -79,9 +79,9 @@ surface, and nightly roll-ups for trends. All detection is deterministic. See
 
 ### Mesh and the approval surface
 
-Three devices — a workstation, a phone, and the agent host — joined by a private WireGuard
-mesh. Nothing is exposed to the public internet; the coordination service sees connection
-metadata, never content.
+A workstation, a phone and the agent host are joined by a private WireGuard mesh. Nothing is
+exposed to the public internet, and the coordination service sees connection metadata, never
+content.
 
 On the agent host, two services bind the mesh interface only: a small stdlib HTTP API serving a
 mobile-first dashboard, and a self-hosted push server. Check the bind with `lsof -i` rather
@@ -114,7 +114,7 @@ the re-render while any input holds focus or content.
 | `orchestrator` | The scheduler pulls projects from the queue and juggles them asynchronously.               | `MODE=orchestrator`                 |
 
 
-Both share the identical brain, harness, security and monitoring — only the driver differs.
+Both share the identical brain, harness, security and monitoring; only the driver differs.
 The orchestrator is deliberately decoupled so that **default mode always works with it
 absent**, and the mode file is read on each loop iteration so switching needs no service
 restart.
@@ -170,7 +170,7 @@ graph.
 alarm. A host that has stopped working cannot report that itself, so the health check is
 something that stops happening.
 
-**Write down the reasoning behind each decision.** The non-obvious ones here — why ingestion is
-out-of-band, why the send gate sits outside the agent, why the toolset is restricted — look
+**Write down the reasoning behind each decision.** The non-obvious ones here (why ingestion is
+out-of-band, why the send gate sits outside the agent, why the toolset is restricted) look
 arbitrary once the context is forgotten, and are easy to remove without noticing what they
 were holding up.

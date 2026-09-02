@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tier C — per-workflow digest (the primary review surface).
+"""Tier C: per-workflow digest (the primary review surface).
 
 Reads the Tier A JSONL log and prints a terse, contextual summary of what a single workflow
 run did. Run at the end of each routine, e.g.:
@@ -7,7 +7,7 @@ run did. Run at the end of each routine, e.g.:
     python3 workflow_digest.py morning-email
     python3 workflow_digest.py morning-email --since 2026-06-22T07:00:00Z
 
-Deterministic only — no LLM judgment. (An LLM may reformat this for readability elsewhere,
+Deterministic only, no LLM judgment. (An LLM may reformat this for readability elsewhere,
 but must never be the safety gatekeeper.)
 """
 from __future__ import annotations
@@ -47,7 +47,7 @@ def render(workflow_id: str, events: list[dict]) -> str:
     if not events:
         return f"[{workflow_id}] no events found."
     times = [e["timestamp"] for e in events if e.get("timestamp")]
-    span = f"{times[0][11:19]}–{times[-1][11:19]}" if times else "?"
+    span = f"{times[0][11:19]}-{times[-1][11:19]}" if times else "?"
 
     action_counts = Counter(e["action_type"] for e in events)
     hosts = Counter(e["external_host"] for e in events if e.get("external_host"))

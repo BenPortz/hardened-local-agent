@@ -1,4 +1,4 @@
-# Email ingestion — out-of-band, read-only
+# Email ingestion: out-of-band and read-only
 
 How the agent gets access to a real mailbox for triage without being able to send, delete or
 leak anything, on the assumption that it can be manipulated by the mail it reads.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tier A — silent append-only audit log + new-vs-known classification.
+"""Tier A: silent append-only audit log + new-vs-known classification.
 
 The forensic source of truth. Every agent action is recorded here as one JSON object per
 line (JSONL). Detection is deterministic: an action's host/skill/credential is checked
@@ -18,8 +18,8 @@ from pathlib import Path
 HIGH_RISK_ALWAYS = {
     "email.send", "email.delete", "settings.change", "cred.access",
     "skill.run.first",   # a newly-created skill running for the first time
-    "project.blocked",   # orchestrator step failed — needs human attention
-    "ask.cloud",         # cloud escalation: content leaves the host — always Tier B
+    "project.blocked",   # orchestrator step failed, needs human attention
+    "ask.cloud",         # cloud escalation: content leaves the host, always Tier B
 }
 # These only alert when the target is NEW (not on an allowlist).
 HIGH_RISK_IF_NEW = {"net.connect", "skill.create"}

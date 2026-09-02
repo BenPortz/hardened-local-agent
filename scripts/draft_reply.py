@@ -4,7 +4,7 @@
 Reads the matching inbox/*.json records (a thread), asks the local model (headless, minimal
 toolset) to draft the next reply FROM the account owner if one is appropriate, saves it to
 drafts/<id>.json, and pushes a "draft ready" notice to the phone. NOTHING is sent and the
-draft body is NOT printed to stdout — it stays on the host (and the owner's dashboard) for
+draft body is NOT printed to stdout; it stays on the host (and the owner's dashboard) for
 human review. Sending is a separate, explicit, gated action; the agent has no send capability.
 
 Message bodies are read by the local model on the agent host only; they never leave it.
@@ -28,7 +28,7 @@ INBOX = REPO / "inbox"
 DRAFTS = REPO / "drafts"
 # Path to the agent harness CLI. Override with AGENT_BIN.
 AGENT = os.environ.get("AGENT_BIN", str(Path.home() / ".local" / "bin" / "hermes"))
-TOOLSETS = "memory"   # smallest toolset: no network, no send — see docs/security-model.md
+TOOLSETS = "memory"   # smallest toolset: no network, no send. See docs/security-model.md
 TIMEOUT = 900
 OWNER = os.environ.get("AGENT_OWNER", "the account owner")
 
@@ -70,7 +70,7 @@ Decide whether the thread needs a NEXT reply written by the owner. Reply in EXAC
 If a reply is appropriate:
 DRAFT_SUBJECT: <subject line, usually "Re: ...">
 DRAFT_BODY:
-<the full email body the owner would send — polite, concise, and specific to the thread>
+<the full email body the owner would send, polite, concise, and specific to the thread>
 
 If no reply is needed (e.g. it is a paid receipt or confirmation with nothing owed or asked):
 NO_REPLY_NEEDED: <one short reason>
@@ -106,7 +106,7 @@ def main() -> None:
     rec = {
         "id": did, "term": term, "thread_ids": [r["id"] for r in recs],
         "kind": "no_reply" if no_reply else "draft",
-        "model_output": out,              # the actual draft — local only, not printed
+        "model_output": out,              # the actual draft, local only, not printed
         "state": "awaiting_review", "sent": False, "created": now(),
     }
     (DRAFTS / (did + ".json")).write_text(json.dumps(rec, indent=2, ensure_ascii=False))

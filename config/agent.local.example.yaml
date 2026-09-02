@@ -1,9 +1,9 @@
-# Agent harness — LOCAL provider config (example / template).
+# Agent harness: LOCAL provider config (example / template).
 # Copy to the harness's own config location on the agent host and fill in.
 # Keep the real config out of git.
 #
 # CRITICAL: the provider must point at a LOCAL inference endpoint and a LOCAL model.
-# Never a ":cloud" model — that sends every prompt off-device and breaks the privacy
+# Never a ":cloud" model, since that sends every prompt off-device and breaks the privacy
 # guarantee the whole design rests on.
 
 model:
@@ -20,5 +20,5 @@ memory:
 
 # NOTE: harness-level approval prompts are a convenience, not a control. Headless/autonomous
 # invocations may bypass them by design, so every gate that actually matters (sending,
-# deleting, spending) must be STRUCTURAL — enforced outside the agent, by code the agent
+# deleting, spending) must be STRUCTURAL, enforced outside the agent, by code the agent
 # cannot call. See docs/security-model.md.
