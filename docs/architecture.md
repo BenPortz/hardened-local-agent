@@ -1,12 +1,14 @@
 # Architecture
 
-This is the architechutre document for a automized hermes agent which can handle tasks offloaded from a main work machine. This agent attempts to works securely so it can handle senstive information which you might not want sent to the cloud. 
+This is the architecture document for an automated Hermes agent that handles tasks offloaded
+from a main work machine. It is built to work securely, so it can handle sensitive information
+you might not want sent to the cloud.
 
 ## The constraint
 
-Sensitive content, including email bodies, documents and account data, **must never leave the machine**  
-and must never enter a third-party training set. Everything the agent reads is processed by a  
-model running on the local host.
+Sensitive content, including email bodies, documents and account data, **must never leave the
+machine** and must never enter a third-party training set. Everything the agent reads is
+processed by a model running on the local host.
 
 ## Layers
 
@@ -27,12 +29,18 @@ model running on the local host.
 
 ### Brain
 
-For my projects brain I used, a mid-size quantized model (14B-class, 4-bit) served over an OpenAI-compatible endpoint bound to loopback. Sizing for this project depends on the amount of ram your workmachine has for a this project roughly 9-10GB of weights plus a quantized KV cache leaves enough headroom on a 16GB machine to actually run.
+For this project's brain I used a mid-size quantized model (14B-class, 4-bit) served over an
+OpenAI-compatible endpoint bound to loopback. Sizing depends on how much RAM your work machine
+has. Here, roughly 9-10GB of weights plus a quantized KV cache leaves enough headroom on a 16GB
+machine to actually run.
 
 Two configuration details matter more than the model choice:
 
-- **Pin the model explicitly and re-verify at startup:** This way a model that actually makes sense for your machine.
-- **Context length: A harness may require a large runtime context for its tool schemas, while the model's own architecture caps it lower and the server silently clamps to that cap. Check what the server actually allocated, not what you** asked for.
+- **Pin the model explicitly and re-verify at startup:** this keeps the agent on a model that
+makes sense for your machine.
+- **Context length:** a harness may require a large runtime context for its tool schemas, while
+the model's own architecture caps it lower and the server silently clamps to that cap. Check
+what the server actually allocated, not what you asked for.
 
 ### Harness
 
@@ -40,7 +48,10 @@ The agent framework provides skills, cross-session memory, and tool execution. I
 as a subprocess behind a single constant (`AGENT_BIN`), in headless one-shot mode: one prompt
 in, final text out.
 
-**Prompts are self-contained: The orchestrator does not rely on the harness's session memory to carry context across steps. Instead the project record carries the full brief plus the complete Q&A history, and every step prompt is** rebuilt from it. This costs prompt tokens, which are free locally, and which can increase determinism.
+**Prompts are self-contained:** the orchestrator does not rely on the harness's session memory
+to carry context across steps. The project record carries the full brief plus the complete Q&A
+history, and every step prompt is rebuilt from it. This costs prompt tokens, which are free
+locally, and it makes each step more deterministic.
 
 ### Driver: the orchestrator
 
